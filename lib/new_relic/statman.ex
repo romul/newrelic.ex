@@ -59,7 +59,7 @@ defmodule NewRelic.Statman do
       sum / 1_000_000,
       min / 1_000_000,
       max / 1_000_000,
-      sum2 / 1_000_000_000
+      sum2 / 1_000_000_000_000
     ]
   end
   def summary([v|rest], {count, sum, min, max, sum2}) do
