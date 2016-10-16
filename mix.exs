@@ -30,7 +30,6 @@ defmodule NewRelic.Mixfile do
     [{:phoenix, "~> 1.2"},
      {:ecto, ">= 1.1.0"},
      {:lhttpc, "~> 1.4"},
-     {:statman, github: "knutin/statman"},
      {:poison, "~> 2.2.0"}]
   end
 end

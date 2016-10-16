@@ -1,52 +1,37 @@
 defmodule NewRelic.Statman do
   def poll do
-    {:ok, metrics} = :statman_aggregator.get_window(60)
-    transform_aggregated_metrics(metrics)
+    [metrics, errors] = NewRelic.Collector.poll
+    transform_aggregated_metrics([metrics, errors])
   end
 
-  def transform_aggregated_metrics(metrics) do
+  def transform_aggregated_metrics([metrics, errors]) do
     ms = metrics
-      |> Enum.reduce([], fn(m, acc) -> [transform_metric(m) | acc] end)
-      |> Enum.reverse
+      |> Map.to_list
+      |> Enum.map(fn(m) -> transform_metric(m) end)
       |> Enum.filter(&(&1 != []))
 
-    counters = Enum.filter(metrics, fn(metric) ->
-      metric[:type] == :counter && !is_list(metric[:node])
-    end)
-
-    errs = Enum.flat_map(counters, fn(metric) -> transform_error_counter(metric) end)
+    errs = errors |> Map.to_list |> Enum.map(fn(metric) -> transform_error_counter(metric) end)
 
     {[webtransaction_total(ms), db_total(ms) | errors_total(errs) ++ ms], errs}
   end
 
-  def transform_error_counter(metric) do
-    case metric[:key] do
-      {scope, {:error, {type, message}}} when is_binary(scope) ->
-        error = [
-          :os.system_time(:micro_seconds) / 1_000_000,
-          scope2bin(scope),
-          to_bin(message),
-          to_bin(type),
-          {[{"parameter_groups", {[]}},
-            {"stack_trace", []},
-            {"request_params", {[]}},
-            {"request_uri", Scope}]}
-        ]
-        List.duplicate(error, metric[:value])
-      _ -> []
-    end
+  def transform_error_counter({{scope, type, message}, count}) do
+    error = [
+      :os.system_time(:micro_seconds) / 1_000_000,
+      scope2bin(scope),
+      to_bin(message),
+      to_bin(type),
+      [%{
+        parameter_groups: %{},
+        stack_trace: [],
+        request_params: %{},
+        request_uri: scope}]
+    ]
+    List.duplicate(error, count) |> List.flatten
   end
 
-  def transform_metric(metric) do
-    transform_metric(metric, metric[:node])
-  end
-  defp transform_metric(_, nil), do: []
-  defp transform_metric(metric, _node) do
-    case metric[:type] do
-      :histogram -> transform_histogram(metric)
-      :counter -> transform_counter(metric)
-      _ -> []
-    end
+  defp transform_metric(metric) do
+    transform_histogram(metric)
   end
 
 
@@ -64,22 +49,26 @@ defmodule NewRelic.Statman do
     end
   end
 
-  def transform_histogram(metric) do
-    transform_histogram(metric, metric[:value])
+  def summary(values) do
+    summary(values, {0, 0, 0, 0, 0})
   end
-  def transform_histogram(_metric, []), do: []
-  def transform_histogram(metric, metric_value) do
-    summary = :statman_histogram.summary(metric_value)
-    data = [
-      summary[:observations],
-      summary[:sum] / 1_000_000,
-      summary[:sum] / 1_000_000,
-      summary[:min] / 1_000_000,
-      summary[:max] / 1_000_000,
-      summary[:sum2] / 1_000_000_000
+  def summary([], {count, sum, min, max, sum2}) do
+    [
+      count,
+      sum / 1_000_000,
+      sum / 1_000_000,
+      min / 1_000_000,
+      max / 1_000_000,
+      sum2 / 1_000_000_000
     ]
+  end
+  def summary([v|rest], {count, sum, min, max, sum2}) do
+    summary(rest, {count+1, sum+v, v < min && v || min, v > max && v || max, sum2+v*v})
+  end
+  def transform_histogram({key, values}) do
+    data = summary(values)
 
-    case metric[:key] do
+    case key do
       {scope, {:db, segment}} when is_binary(scope) ->
         [
          [%{name: "Database/#{to_bin(segment)}", scope: scope2bin(scope)}, data],

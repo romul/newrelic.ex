@@ -8,24 +8,17 @@ defmodule NewRelic do
   def start(_type \\ :normal, _args \\ []) do
     import Supervisor.Spec, warn: false
 
+    unless configured? do
+      raise CompileError.message("Set :application_name and :license_key for :new_relic app")
+    end
+
     children = [
-      supervisor(:statman_sup, [[1000]]),
-      worker(:statman_aggregator, []),
+      worker(NewRelic.Collector, []),
+      worker(NewRelic.Poller, [&NewRelic.Statman.poll/0])
     ]
 
     opts = [strategy: :one_for_one, name: NewRelic.Supervisor]
-    result = Supervisor.start_link(children, opts)
-
-    :ok = :statman_server.add_subscriber(:statman_aggregator)
-
-    with {:ok, _app_name} <- Application.fetch_env(:new_relic, :application_name),
-         {:ok, _license_key} <- Application.fetch_env(:new_relic, :license_key) do
-      {:ok, _} = NewRelic.Poller.start_link(&NewRelic.Statman.poll/0)
-    else
-      _ -> raise CompileError.message("Set :application_name and :license_key for :new_relic app")
-    end
-
-    result
+    Supervisor.start_link(children, opts)
   end
 
   @doc false
