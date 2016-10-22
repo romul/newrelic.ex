@@ -61,12 +61,7 @@ defmodule NewRelic.Agent do
 
   def push_metric_data(collector, run_id, metric_data) do
     url = url(collector, [method: :metric_data, run_id: run_id])
-
-    data = [run_id,
-            now_to_seconds() - 60,
-            now_to_seconds(),
-            metric_data]
-
+    data = [run_id | metric_data]
     push_data(url, data)
   end
 
@@ -102,10 +97,6 @@ defmodule NewRelic.Agent do
   end
   defp l2i(char_list) do
     :erlang.list_to_integer(char_list)
-  end
-
-  defp now_to_seconds() do
-    :os.system_time(:seconds)
   end
 
   defp app_name() do

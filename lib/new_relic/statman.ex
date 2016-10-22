@@ -1,10 +1,10 @@
 defmodule NewRelic.Statman do
   def poll do
-    [metrics, errors] = NewRelic.Collector.poll
-    transform_aggregated_metrics([metrics, errors])
+    [time, metrics, errors] = NewRelic.Collector.poll
+    transform_aggregated_metrics(metrics, errors, time)
   end
 
-  def transform_aggregated_metrics([metrics, errors]) do
+  def transform_aggregated_metrics(metrics, errors, time) do
     ms = metrics
       |> Map.to_list
       |> Enum.map(fn(m) -> transform_metric(m) end)
@@ -12,7 +12,7 @@ defmodule NewRelic.Statman do
 
     errs = errors |> Map.to_list |> Enum.map(fn(metric) -> transform_error_counter(metric) end)
 
-    {[webtransaction_total(ms), db_total(ms) | errors_total(errs) ++ ms], errs}
+    {[webtransaction_total(ms), db_total(ms) | errors_total(errs) ++ ms], errs, time}
   end
 
   def transform_error_counter({{scope, type, message}, count}) do

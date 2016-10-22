@@ -30,6 +30,7 @@ defmodule NewRelic.Collector do
   end
 
   def handle_call(:poll, _from, state) do
-    {:reply, state, @default_state}
+    current_time = :os.system_time(:milli_seconds)
+    {:reply, [current_time | state], @default_state}
   end
 end
