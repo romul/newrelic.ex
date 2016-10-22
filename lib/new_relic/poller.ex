@@ -13,8 +13,8 @@ defmodule NewRelic.Poller do
   ## Callbacks
 
   def init(state) do
-    :erlang.send_after(@poll_interval, self(), :poll)
-    {:ok, state}
+    timer = :erlang.send_after(@poll_interval, self(), :poll)
+    {:ok, Map.put(state, :timer, timer)}
   end
 
   def handle_call(_msg, _from, state) do
@@ -25,8 +25,9 @@ defmodule NewRelic.Poller do
     {:noreply, state}
   end
 
-  def handle_info(:poll, %{poll_fun: poll_fun, error_cb: error_cb} = state) do
-    :erlang.send_after(@poll_interval, self(), :poll)
+  def handle_info(:poll, %{poll_fun: poll_fun, error_cb: error_cb, timer: old_timer}) do
+    :erlang.cancel_timer(old_timer)
+    timer = :erlang.send_after(@poll_interval, self(), :poll)
     {:ok, hostname} = :inet.gethostname()
     try do
       case poll_fun.() do
@@ -44,7 +45,7 @@ defmodule NewRelic.Poller do
       error -> error_cb.(:poll_failed, error)
     end
 
-    {:noreply, state}
+    {:noreply, %{poll_fun: poll_fun, error_cb: error_cb, timer: timer}}
   end
 
   def handle_info(_msg, state) do
