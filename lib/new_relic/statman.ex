@@ -1,7 +1,7 @@
 defmodule NewRelic.Statman do
   def poll do
-    [time, metrics, errors] = NewRelic.Collector.poll
-    transform_aggregated_metrics(metrics, errors, time)
+    [end_time, start_time, metrics, errors] = NewRelic.Collector.poll
+    transform_aggregated_metrics(metrics, errors, {start_time, end_time})
   end
 
   def transform_aggregated_metrics(metrics, errors, time) do

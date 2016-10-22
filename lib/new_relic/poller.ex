@@ -33,10 +33,10 @@ defmodule NewRelic.Poller do
       case poll_fun.() do
         {[], []} ->
           :ok
-        {metrics, errors, time} ->
+        {metrics, errors, {start_time, end_time}} ->
           metrics = [
-            round((time - @poll_interval) / 1000),
-            round(time / 1000),
+            round(start_time / 1000),
+            round(end_time / 1000),
             metrics
           ]
           NewRelic.Agent.push(hostname, metrics, errors)
