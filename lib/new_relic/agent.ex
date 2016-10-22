@@ -52,10 +52,10 @@ defmodule NewRelic.Agent do
         struct = Poison.decode!(body)
         return = struct["return_value"]
         return["agent_run_id"]
-      {:ok, {{503, _}, _, _}} ->
-        raise RuntimeError.message("newrelic_down")
+      {:ok, {{503, _}, _, body}} ->
+        raise RuntimeError.exception("newrelic - connect - #{inspect body}")
       {:error, :timeout} ->
-        raise RuntimeError.message("newrelic_down")
+        raise RuntimeError.exception("newrelic - connect - timeout")
     end
   end
 
@@ -81,12 +81,12 @@ defmodule NewRelic.Agent do
           exception ->
             {:error, exception}
         end;
-      {:ok, {{503, _}, _, _}} ->
-        raise RuntimeError.message("newrelic_down")
+      {:ok, {{503, _}, _, body}} ->
+        raise RuntimeError.exception("newrelic - push_data - #{inspect body}")
       {:ok, resp} ->
         IO.inspect resp
       {:error, :timeout} ->
-        raise RuntimeError.message("newrelic_down")
+        raise RuntimeError.exception("newrelic - push_data - timeout")
     end
   end
 
