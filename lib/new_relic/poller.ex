@@ -39,7 +39,11 @@ defmodule NewRelic.Poller do
             round(end_time / 1000),
             metrics
           ]
-          NewRelic.Agent.push(hostname, metrics, errors)
+          try do
+            NewRelic.Agent.push(hostname, metrics, errors)
+          rescue
+            error -> error_cb.(:push_failed, error)
+          end
       end
     rescue
       error -> error_cb.(:poll_failed, error)
