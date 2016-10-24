@@ -33,7 +33,7 @@ defmodule NewRelic.Agent do
   end
 
 
-  def connect(collector, hostname) do
+  def connect(collector, hostname, attempts_count \\ 1) do
     url = url(collector, [method: :connect])
 
     data = [%{
@@ -55,7 +55,11 @@ defmodule NewRelic.Agent do
       {:ok, {{503, _}, _, body}} ->
         raise RuntimeError.exception("newrelic - connect - #{inspect body}")
       {:error, :timeout} ->
-        raise RuntimeError.exception("newrelic - connect - timeout")
+        if attempts_count > 0 do
+          connect(collector, hostname, attempts_count-1)
+        else
+          raise RuntimeError.exception("newrelic - connect - timeout")
+        end
     end
   end
 
