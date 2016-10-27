@@ -7,6 +7,8 @@ defmodule NewRelic.Mixfile do
      elixir: "~> 1.3",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
+     description: "Elixir library for sending metrics to New Relic.",
+     package: package(),
      deps: deps()]
   end
 
@@ -31,5 +33,11 @@ defmodule NewRelic.Mixfile do
      {:ecto, ">= 1.1.0"},
      {:lhttpc, "~> 1.4"},
      {:poison, "~> 2.2.0"}]
+  end
+
+  defp package do
+    [maintainers: ["Roman Smirnov"],
+     licenses: ["MIT"],
+     links: %{"Github" => "https://github.com/romul/newrelic.ex"}]
   end
 end
