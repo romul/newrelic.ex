@@ -61,6 +61,10 @@ defmodule NewRelic.Plug.Instrumentation do
     nil
   end
 
+  defp infer_model({_, _, [model_type | _]}) do
+    model_name(model_type)
+  end
+
   defp infer_model(queryable) do
     infer_model(Ecto.Queryable.to_query(queryable))
   end

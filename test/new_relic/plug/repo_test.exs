@@ -431,6 +431,20 @@ defmodule NewRelic.Plug.RepoTest do
     assert_between(recorded_time, sleep_time, elapsed_time)
   end
 
+  # preload and all
+
+  test "preload accepts model as first argument", %{conn: conn} do
+    assert FakeModel |> Repo.all |> Repo.preload(:foo, conn: conn) == FakeModel |> FakeRepo.all |> FakeRepo.preload(:foo)
+  end
+
+  test "preload works when passed connection and repo.all is last function called", %{conn: conn} do
+    assert FakeModel |> Repo.preload(:foo, conn: conn) |> Repo.all == FakeModel |> FakeRepo.preload(:foo) |> Repo.all
+  end
+
+  test "preload works when repo.all is last function called", %{conn: conn} do
+    assert FakeModel |> Repo.preload(:foo) |> Repo.all(conn: conn) == FakeModel |> FakeRepo.preload(:foo) |> Repo.all
+  end
+
   # transaction
 
   test "transaction calls repo's transaction method", %{conn: _conn} do
