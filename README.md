@@ -1,5 +1,7 @@
 # NewRelic agent for Elixir
 
+[![Build Status](https://travis-ci.org/romul/newrelic.ex.svg?branch=master)](https://travis-ci.org/romul/newrelic.ex)
+
 Instrument your Phoenix applications with New Relic.
 
 It currently supports instrumenting Phoenix controllers and Ecto repositories to record
