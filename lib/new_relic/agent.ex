@@ -43,7 +43,7 @@ defmodule NewRelic.Agent do
       :identifier => app_name(),
       :pid => l2i(:os.getpid()),
       :environment => [],
-      :language => "python",
+      :language => Application.get_env(:new_relic, :language, "python"),
       :settings => %{}
     }]
 
