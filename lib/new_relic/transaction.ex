@@ -31,6 +31,17 @@ defmodule NewRelic.Transaction do
   end
 
   @doc """
+  Updates the name of an existing transaction
+
+  This method allows you to specify the name of a transaction after start to
+  facilitate the use case where the transaction name is not known at start time.
+  """
+  @spec update_name(t, String.t) :: t
+  def update_name(transaction, new_name) do
+    %{transaction | name: new_name}
+  end
+
+  @doc """
   Finishes a web transaction.
 
   This method should be called just after processing a web transaction. It will record the elapsed
