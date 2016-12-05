@@ -6,13 +6,15 @@ defmodule NewRelic.Agent do
   formatted data and registers it under the given hostname.
   """
   def push(hostname, data, errors) do
-    collector = get_redirect_host()
-    run_id = connect(collector, hostname)
-    case push_metric_data(collector, run_id, data) do
-      :ok ->
-        push_error_data(collector, run_id, errors)
-      error ->
-        IO.inspect error
+    if NewRelic.configured? do
+      collector = get_redirect_host()
+      run_id = connect(collector, hostname)
+      case push_metric_data(collector, run_id, data) do
+        :ok ->
+          push_error_data(collector, run_id, errors)
+        error ->
+          IO.inspect error
+      end
     end
   end
 

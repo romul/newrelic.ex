@@ -8,10 +8,6 @@ defmodule NewRelic do
   def start(_type \\ :normal, _args \\ []) do
     import Supervisor.Spec, warn: false
 
-    unless configured? do
-      raise CompileError.message("Set :application_name and :license_key for :new_relic app")
-    end
-
     children = [
       worker(NewRelic.Collector, []),
       worker(NewRelic.Poller, [&NewRelic.Statman.poll/0])
