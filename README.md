@@ -68,7 +68,7 @@ Phoenix application named `MyApp`.
       use Ecto.Repo, otp_app: :my_app
 
       defmodule NewRelic do
-        use NewRelic.Plug.Repo, repo: MyApp.Repo
+        use Elixir.NewRelic.Plug.Repo, repo: MyApp.Repo
       end
     end
     ```
