@@ -41,7 +41,7 @@ Phoenix application named `MyApp`.
       end
 
       defp deps do
-        [{:new_relic, github: "romul/newrelic.ex"}]
+        [{:new_relic, "~> 0.1.1"}]
       end
     end
     ```
