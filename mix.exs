@@ -32,7 +32,7 @@ defmodule NewRelic.Mixfile do
     [{:phoenix, "~> 1.2"},
      {:ecto, ">= 1.1.0"},
      {:lhttpc, "~> 1.4"},
-     {:poison, "~> 2.2.0"},
+     {:poison, "~> 2.2 or ~> 3.0"},
      {:ex_doc, ">= 0.0.0", only: :dev}]
   end
 
