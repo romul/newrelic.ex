@@ -28,7 +28,7 @@ defmodule NewRelic.Poller do
   def handle_info(:poll, %{poll_fun: poll_fun, error_cb: error_cb, timer: old_timer}) do
     :erlang.cancel_timer(old_timer)
     timer = :erlang.send_after(@poll_interval, self(), :poll)
-    {:ok, hostname} = :inet.gethostname()
+    {:ok, hostname} = :net_adm.dns_hostname(:net_adm.localhost)
     try do
       case poll_fun.() do
         {[], []} ->
