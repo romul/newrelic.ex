@@ -8,16 +8,17 @@ defmodule NewRelic.Plug.PhoenixTest do
 
   setup %{configured: configured} do
     if configured do
-      Application.put_env(:new_relic, :application_name, to_char_list("App Name"))
-      Application.put_env(:new_relic, :license_key, to_char_list("License Key"))
+      Application.put_env(:new_relic, :application_name, to_charlist("App Name"))
+      Application.put_env(:new_relic, :license_key, to_charlist("License Key"))
     else
       Application.delete_env(:new_relic, :application_name)
       Application.delete_env(:new_relic, :license_key)
     end
 
-    conn = %Plug.Conn{}
-    |> put_private(:phoenix_controller, SomeApplication.FakeController)
-    |> put_private(:phoenix_action, :test_action)
+    conn =
+      %Plug.Conn{}
+      |> put_private(:phoenix_controller, SomeApplication.FakeController)
+      |> put_private(:phoenix_action, :test_action)
 
     {:ok, conn: conn}
   end
@@ -33,11 +34,12 @@ defmodule NewRelic.Plug.PhoenixTest do
   end
 
   test "it records the elapsed time of the controller action", %{conn: conn} do
-    {_, elapsed_time} = :timer.tc(fn() ->
-      conn = NewRelic.Plug.Phoenix.call(conn, nil)
-      :ok = :timer.sleep(42)
-      Enum.each(conn.before_send, fn (f) -> f.(conn) end)
-    end)
+    {_, elapsed_time} =
+      :timer.tc(fn ->
+        conn = NewRelic.Plug.Phoenix.call(conn, nil)
+        :ok = :timer.sleep(42)
+        Enum.each(conn.before_send, fn f -> f.(conn) end)
+      end)
 
     [recorded_time] = get_metric_by_key({"FakeController#test_action", :total})
 

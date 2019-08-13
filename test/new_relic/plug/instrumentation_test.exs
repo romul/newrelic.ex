@@ -8,6 +8,7 @@ defmodule NewRelic.Plug.InstrumentationTest do
 
   defmodule FakeModel do
     use Ecto.Schema
+
     schema "fake_models" do
     end
   end
@@ -15,20 +16,28 @@ defmodule NewRelic.Plug.InstrumentationTest do
   @transaction_name "TestTransaction"
 
   setup do
-    conn = %Plug.Conn{}
-    |> put_private(:new_relixir_transaction, NewRelic.Transaction.start(@transaction_name))
+    conn =
+      %Plug.Conn{}
+      |> put_private(:new_relixir_transaction, NewRelic.Transaction.start(@transaction_name))
 
     {:ok, conn: conn}
   end
 
   # query names
 
-  test "instrument_db records elapsed time with correct key when given custom query string", %{conn: conn} do
-    Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn, query: "TestQuery"], fn -> nil end)
+  test "instrument_db records elapsed time with correct key when given custom query string", %{
+    conn: conn
+  } do
+    Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn, query: "TestQuery"], fn ->
+      nil
+    end)
+
     assert_contains(get_metric_keys(), {@transaction_name, {:db, "TestQuery"}})
   end
 
-  test "instrument_db infers query name from instance of Ecto model and action name", %{conn: conn} do
+  test "instrument_db infers query name from instance of Ecto model and action name", %{
+    conn: conn
+  } do
     Instrumentation.instrument_db(:foo, %FakeModel{}, [conn: conn], fn -> nil end)
     assert_contains(get_metric_keys(), {@transaction_name, {:db, "FakeModel.foo"}})
   end
@@ -58,20 +67,23 @@ defmodule NewRelic.Plug.InstrumentationTest do
   # with transaction
 
   test "instrument_db records accurate elapsed time", %{conn: conn} do
-    {_, elapsed_time} = :timer.tc(fn ->
-      Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn], fn ->
-        :ok = :timer.sleep(42)
+    {_, elapsed_time} =
+      :timer.tc(fn ->
+        Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn], fn ->
+          :ok = :timer.sleep(42)
+        end)
       end)
-    end)
 
     [recorded_time] = get_metric_by_key({@transaction_name, {:db, "SQL"}})
     assert_between(recorded_time, 42000, elapsed_time)
   end
 
   test "instrument_db returns value of instrumented function", %{conn: conn} do
-    return_value = Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn], fn ->
-      42
-    end)
+    return_value =
+      Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: conn], fn ->
+        42
+      end)
+
     assert return_value == 42
   end
 
@@ -83,9 +95,11 @@ defmodule NewRelic.Plug.InstrumentationTest do
   end
 
   test "instrument_db returns value of instrumented function when transaction is not present" do
-    return_value = Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: %Plug.Conn{}], fn ->
-      42
-    end)
+    return_value =
+      Instrumentation.instrument_db(:foo, %Ecto.Query{}, [conn: %Plug.Conn{}], fn ->
+        42
+      end)
+
     assert return_value == 42
   end
 end
