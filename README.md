@@ -41,7 +41,7 @@ Phoenix application named `MyApp`.
       end
 
       defp deps do
-        [{:new_relic, "~> 0.1.1"}]
+        [{:new_relic, "~> 0.1.2"}]
       end
     end
     ```
