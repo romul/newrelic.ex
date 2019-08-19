@@ -3,6 +3,10 @@ defmodule NewRelic.Collector do
   @name __MODULE__
   @default_state [%{}, %{}]
 
+  def init(args) do
+    {:ok, args}
+  end
+
   def start_link(_opts \\ []) do
     GenServer.start_link(@name, [current_time() | @default_state], name: @name)
   end
@@ -20,7 +24,7 @@ defmodule NewRelic.Collector do
   end
 
   def handle_cast({:record_value, key, time}, [start_time, metrics, errors]) do
-    metrics = Map.update(metrics, key, [time], &([time | &1]))
+    metrics = Map.update(metrics, key, [time], &[time | &1])
     {:noreply, [start_time, metrics, errors]}
   end
 

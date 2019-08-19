@@ -18,7 +18,7 @@ defmodule NewRelic.Mixfile do
   #
   # Type "mix help compile.app" for more information
   def application do
-    [mod: {NewRelic, []}, applications: [:logger, :lhttpc, :poison]]
+    [mod: {NewRelic, []}, applications: [:logger, :lhttpc, :os_mon, :poison]]
   end
 
   defp deps do

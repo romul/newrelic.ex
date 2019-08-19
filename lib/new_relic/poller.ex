@@ -28,17 +28,20 @@ defmodule NewRelic.Poller do
   def handle_info(:poll, %{poll_fun: poll_fun, error_cb: error_cb, timer: old_timer}) do
     :erlang.cancel_timer(old_timer)
     timer = :erlang.send_after(@poll_interval, self(), :poll)
-    {:ok, hostname} = :net_adm.dns_hostname(:net_adm.localhost)
+    hostname = NewRelic.Utils.hostname()
+
     try do
       case poll_fun.() do
         {[], []} ->
           :ok
+
         {metrics, errors, {start_time, end_time}} ->
           metrics = [
             round(start_time / 1000),
             round(end_time / 1000),
             metrics
           ]
+
           try do
             NewRelic.Agent.push(hostname, metrics, errors)
           rescue
@@ -59,10 +62,10 @@ defmodule NewRelic.Poller do
   ## Private functions
 
   defp default_error_cb(:poll_failed, err_msg) do
-    Logger.error("NewRelic.Poller: polling failed: #{inspect err_msg}")
-  end
-  defp default_error_cb(:push_failed, err_msg) do
-    Logger.error("NewRelic.Poller: push failed: #{inspect err_msg}")
+    Logger.error("NewRelic.Poller: polling failed: #{inspect(err_msg)}")
   end
 
+  defp default_error_cb(:push_failed, err_msg) do
+    Logger.error("NewRelic.Poller: push failed: #{inspect(err_msg)}")
+  end
 end
