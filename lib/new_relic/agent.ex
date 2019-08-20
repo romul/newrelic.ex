@@ -156,7 +156,7 @@ defmodule NewRelic.Agent do
 
     base_url = String.replace(@base_url, "~s", host)
     segments = List.flatten([base_url, urljoin(args ++ base_args)])
-    Enum.join(segments) |> String.to_char_list()
+    Enum.join(segments) |> String.to_charlist()
   end
 
   defp urljoin([]), do: []
