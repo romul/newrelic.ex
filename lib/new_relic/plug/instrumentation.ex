@@ -41,7 +41,7 @@ defmodule NewRelic.Plug.Instrumentation do
     Keyword.put_new(opts, :action, action)
   end
 
-  defp infer_model(%{__struct__: model_type, __meta__: %Ecto.Schema.Metadata{}}) do
+  defp infer_model(%{__struct__: model_type, __meta__: %{__struct__: Ecto.Schema.Metadata}}) do
     model_name(model_type)
   end
   # Ecto 1.1 clause
@@ -53,11 +53,11 @@ defmodule NewRelic.Plug.Instrumentation do
     infer_model(data)
   end
 
-  defp infer_model(%Ecto.Query{from: {_, model_type}}) do
+  defp infer_model(%{__struct__: Ecto.Query, from: {_, model_type}}) do
     model_name(model_type)
   end
 
-  defp infer_model(%Ecto.Query{}) do
+  defp infer_model(%{__struct__: Ecto.Query}) do
     nil
   end
 
